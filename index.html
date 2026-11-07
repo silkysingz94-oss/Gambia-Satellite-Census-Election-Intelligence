@@ -1,0 +1,1078 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILKYSINGZ GEOAI | GAMBIA SATELLITE SPATIAL INTELLIGENCE</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<style>
+:root {
+ --bg:#07111f;
+ --panel:#101e30;
+ --panel2:#15263b;
+ --border:#263b51;
+ --text:#e9f1fa;
+ --muted:#92a8be;
+ --cyan:#20b9df;
+ --blue:#4388ef;
+ --green:#29c58a;
+ --orange:#f0a64b;
+ --red:#ef6672;
+ --purple:#a98af7;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--text);
+ font-family:Inter,Segoe UI,Arial,sans-serif;
+ overflow:hidden;
+}
+button,input,select{font:inherit}
+header{
+ height:65px;background:#0c1b2c;border-bottom:1px solid var(--border);
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 18px;gap:10px;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+ width:39px;height:39px;border-radius:10px;
+ background:linear-gradient(135deg,#087fae,#2464c7);
+ display:grid;place-items:center;font-size:19px;
+}
+.brand h1{font-size:15px;margin:0;letter-spacing:.5px}
+.brand p{font-size:10px;color:var(--muted);margin:4px 0 0}
+.header-right{display:flex;gap:9px;align-items:center}
+.status{
+ padding:7px 10px;border:1px solid var(--border);
+ border-radius:20px;font-size:10px;color:var(--green);
+}
+.topbtn{
+ background:var(--panel2);color:white;border:1px solid var(--border);
+ padding:8px 11px;border-radius:6px;cursor:pointer;font-size:11px;
+}
+.dashboard{
+ height:calc(100vh - 65px);
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+ gap:9px;padding:9px;
+}
+.panel{
+ min-width:0;min-height:0;display:flex;flex-direction:column;
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:9px;overflow:hidden;
+}
+.panel-heading{
+ padding:12px 14px;background:#13243a;
+ border-bottom:1px solid var(--border);
+ display:flex;align-items:center;justify-content:space-between;
+ flex-shrink:0;
+}
+.panel-heading h2{font-size:12px;margin:0;letter-spacing:.7px}
+.panel-heading small{font-size:9px;color:var(--muted)}
+.panel-content{
+ padding:12px;overflow-y:auto;min-height:0;flex:1;
+ scrollbar-width:thin;scrollbar-color:#38516a transparent;
+}
+.section{
+ border:1px solid var(--border);border-radius:7px;
+ padding:11px;margin-bottom:11px;background:#122136;
+}
+.section-title{
+ font-size:10px;font-weight:700;color:var(--cyan);
+ text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;
+}
+label{display:block;color:#a9bfd3;font-size:10px;margin-bottom:5px}
+input[type=file],input[type=text],select{
+ width:100%;background:#091729;border:1px solid #30445a;
+ border-radius:5px;color:white;padding:9px;font-size:11px;
+ outline:none;
+}
+input[type=checkbox]{accent-color:var(--cyan)}
+.field{margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{
+ background:#087fae;color:white;border:0;border-radius:5px;
+ padding:9px 10px;font-size:10px;cursor:pointer;width:100%;
+ font-weight:600;
+}
+.btn.secondary{background:#243b55;border:1px solid #38516b}
+.btn.green{background:#087a5c}
+.btn.orange{background:#87551e}
+.btnrow{display:flex;gap:7px;margin-top:9px}
+.checkrow{
+ display:flex;align-items:center;gap:8px;font-size:10px;
+ color:#c5d3e2;margin:8px 0;
+}
+#map{width:100%;height:100%;min-height:250px;background:#101d2a}
+.map-wrap{flex:1;min-height:0;position:relative}
+.map-toolbar{
+ position:absolute;z-index:500;top:10px;left:10px;right:10px;
+ display:flex;justify-content:space-between;gap:8px;pointer-events:none;
+}
+.map-toolbar button,.map-toolbar span{pointer-events:auto}
+.map-chip{
+ background:#10243aee;border:1px solid #526c84;
+ color:white;padding:8px 10px;border-radius:5px;
+ font-size:10px;box-shadow:0 2px 9px #0006;
+}
+.map-footer{
+ display:flex;justify-content:space-between;gap:8px;
+ padding:9px 11px;background:#101f32;
+ border-top:1px solid var(--border);font-size:9px;color:var(--muted);
+ flex-shrink:0;
+}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
+.kpi{
+ padding:11px;border:1px solid var(--border);
+ background:#12243a;border-radius:7px;min-width:0;
+}
+.kpi .name{font-size:9px;color:var(--muted);margin-bottom:7px}
+.kpi .value{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .sub{font-size:9px;color:var(--cyan);margin-top:5px}
+.chart-card{
+ border:1px solid var(--border);border-radius:7px;
+ padding:10px;background:#122136;margin-bottom:11px;
+ min-width:0;
+}
+.chart-title{font-size:10px;font-weight:700;margin-bottom:10px}
+.chart-box{height:190px;position:relative}
+.chart-box.large{height:230px}
+.chart-box canvas{max-width:100%}
+.legend-item{font-size:10px;color:#b6c9d9;margin:6px 0}
+.legend-dot{
+ display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px
+}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{text-align:left;padding:8px 5px;border-bottom:1px solid #293e53}
+th{color:var(--cyan);font-weight:600}
+td{color:#c7d5e2}
+.table-wrap{overflow-x:auto}
+.note{font-size:9px;color:var(--muted);line-height:1.6}
+.range-line{display:flex;align-items:center;gap:8px}
+input[type=range]{width:100%;accent-color:var(--cyan)}
+#mapInfo{
+ position:absolute;z-index:450;bottom:12px;left:12px;
+ background:#0c1b2ce8;border:1px solid #476078;
+ padding:9px;border-radius:6px;font-size:10px;
+ pointer-events:none;max-width:75%;
+}
+.leaflet-control-attribution{font-size:8px!important}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{
+ background:#10243a;color:white
+}
+.leaflet-popup-content{font-size:11px}
+.empty{
+ color:var(--muted);font-size:10px;padding:15px;text-align:center;
+}
+footer{
+ padding:9px;text-align:center;font-size:9px;
+ color:#8197ad;border-top:1px solid var(--border);
+}
+@media(max-width:900px){
+ body{overflow:auto}
+ .dashboard{height:auto;grid-template-columns:1fr}
+ .panel{height:650px}
+ .panel.map-panel{height:650px}
+ header{height:auto;min-height:65px;flex-wrap:wrap;padding:10px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="brand">
+  <div class="logo"><i class="fa-solid fa-satellite"></i></div>
+  <div>
+   <h1>SILKYSINGZ GEOAI | GAMBIAN SPATIAL INTELLIGENCE</h1>
+   <p>Satellite Imagery • Administrative Geography • Spatial Analytics</p>
+  </div>
+ </div>
+ <div class="header-right">
+  <span class="status"><i class="fa-solid fa-circle"></i> IMAGERY SERVICE</span>
+  <button class="topbtn" onclick="resetDashboard()"><i class="fa-solid fa-rotate"></i> RESET</button>
+ </div>
+</header>
+
+<main class="dashboard">
+
+<!-- ===================================================
+     COLUMN 1: CONTROLS
+=================================================== -->
+<section class="panel">
+ <div class="panel-heading">
+  <h2><i class="fa-solid fa-sliders"></i> 01 | CONTROLS</h2>
+  <small>DATA & CONFIGURATION</small>
+ </div>
+
+ <div class="panel-content">
+
+  <div class="section">
+   <div class="section-title">01. Geographic dataset</div>
+
+   <div class="field">
+    <label>Upload GeoJSON / JSON administrative boundaries</label>
+    <input type="file" id="geoFile" accept=".geojson,.json">
+   </div>
+
+   <div class="field">
+    <label>Optional remote GeoJSON URL</label>
+    <input type="text" id="geoUrl"
+    placeholder="https://example.com/Census_EAs_Geo.json">
+   </div>
+
+   <div class="btnrow">
+    <button class="btn" onclick="loadRemote()">LOAD URL</button>
+    <button class="btn secondary" onclick="clearData()">CLEAR DATA</button>
+   </div>
+   <p class="note">Upload Census_EAs_Geo.json or another valid FeatureCollection. Remote URLs must permit browser CORS access.</p>
+  </div>
+
+  <div class="section">
+   <div class="section-title">02. Administrative selection</div>
+
+   <div class="field">
+    <label>Region / LGA</label>
+    <select id="regionSelect"><option value="ALL">All regions</option></select>
+   </div>
+
+   <div class="field">
+    <label>District</label>
+    <select id="districtSelect"><option value="ALL">All districts</option></select>
+   </div>
+
+   <div class="field">
+    <label>Ward</label>
+    <select id="wardSelect"><option value="ALL">All wards</option></select>
+   </div>
+
+   <button class="btn" onclick="applyFilters()">APPLY GEOGRAPHIC FILTERS</button>
+   <p class="note" id="fieldInfo">Administrative attributes will be detected after loading data.</p>
+  </div>
+
+  <div class="section">
+   <div class="section-title">03. Satellite imagery</div>
+
+   <div class="field">
+    <label>Basemap</label>
+    <select id="baseSelect">
+     <option value="satellite">Esri World Imagery</option>
+     <option value="hybrid">Satellite + Labels</option>
+     <option value="road">Esri World Street Map</option>
+     <option value="topo">Esri Topographic</option>
+     <option value="osm">OpenStreetMap</option>
+    </select>
+   </div>
+
+   <div class="field">
+    <label>Imagery opacity</label>
+    <div class="range-line">
+     <input id="opacity" type="range" min="20" max="100" value="100">
+     <span id="opacityValue">100%</span>
+    </div>
+   </div>
+
+   <div class="field">
+    <label>Imagery zoom level</label>
+    <select id="zoomSelect">
+     <option value="6">Zoom 6</option>
+     <option value="8">Zoom 8</option>
+     <option value="10" selected>Zoom 10</option>
+     <option value="12">Zoom 12</option>
+     <option value="14">Zoom 14</option>
+     <option value="16">Zoom 16</option>
+     <option value="18">Zoom 18</option>
+    </select>
+   </div>
+
+   <div class="btnrow">
+    <button class="btn secondary" onclick="setZoom()">SET ZOOM</button>
+    <button class="btn secondary" onclick="map.fitBounds(gambiaBounds)">FIT GAMBIA</button>
+   </div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">04. Map layers</div>
+   <label class="checkrow"><input type="checkbox" id="boundaryToggle" checked> Administrative boundaries</label>
+   <label class="checkrow"><input type="checkbox" id="eaToggle" checked> EA / polygon outlines</label>
+   <label class="checkrow"><input type="checkbox" id="labelToggle"> Feature labels</label>
+   <label class="checkrow"><input type="checkbox" id="highlightToggle" checked> Highlight selected geography</label>
+   <label class="checkrow"><input type="checkbox" id="imageryToggle" checked> Satellite imagery</label>
+  </div>
+
+  <div class="section">
+   <div class="section-title">05. Spatial operations</div>
+   <div class="field">
+    <label>Selection mode</label>
+    <select id="selectionMode">
+     <option value="click">Click feature on map</option>
+     <option value="filter">Administrative filters</option>
+    </select>
+   </div>
+   <div class="btnrow">
+    <button class="btn green" onclick="zoomToData()">ZOOM TO DATA</button>
+    <button class="btn secondary" onclick="clearSelection()">CLEAR SELECTION</button>
+   </div>
+   <div class="btnrow">
+    <button class="btn orange" onclick="exportGeoJSON()">EXPORT GEOJSON</button>
+    <button class="btn secondary" onclick="exportCSV()">EXPORT CSV</button>
+   </div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">06. Map inspection</div>
+   <div class="note" id="coordinateInfo">
+    Click anywhere on the map to inspect geographic coordinates and tile information.
+   </div>
+  </div>
+
+ </div>
+</section>
+
+<!-- ===================================================
+     COLUMN 2: INTERACTIVE MAP
+=================================================== -->
+<section class="panel map-panel">
+ <div class="panel-heading">
+  <h2><i class="fa-solid fa-map-location-dot"></i> 02 | INTERACTIVE MAP</h2>
+  <small>WGS84 • EPSG:4326</small>
+ </div>
+
+ <div class="map-wrap">
+  <div id="map"></div>
+
+  <div class="map-toolbar">
+   <span class="map-chip"><i class="fa-solid fa-satellite"></i> ESRI WORLD IMAGERY</span>
+   <button class="map-chip" onclick="map.locate({setView:true,maxZoom:15})">
+    <i class="fa-solid fa-location-crosshairs"></i> Locate
+   </button>
+  </div>
+
+  <div id="mapInfo">
+   <b>GAMBIA GEOINT</b><br>
+   Awaiting spatial dataset...
+  </div>
+ </div>
+
+ <div class="map-footer">
+  <span id="mapZoom">Zoom: 9</span>
+  <span id="mapCoords">Coordinates: 13.45, -16.58</span>
+  <span id="tileCoords">Tile: --</span>
+ </div>
+</section>
+
+<!-- ===================================================
+     COLUMN 3: ANALYTICS
+=================================================== -->
+<section class="panel">
+ <div class="panel-heading">
+  <h2><i class="fa-solid fa-chart-line"></i> 03 | ANALYTICS</h2>
+  <small>LIVE SPATIAL SUMMARY</small>
+ </div>
+
+ <div class="panel-content">
+
+  <div class="kpi-grid">
+   <div class="kpi">
+    <div class="name">TOTAL FEATURES</div>
+    <div class="value" id="kFeatures">0</div>
+    <div class="sub">Loaded geographic records</div>
+   </div>
+   <div class="kpi">
+    <div class="name">VISIBLE FEATURES</div>
+    <div class="value" id="kVisible">0</div>
+    <div class="sub">Current filter selection</div>
+   </div>
+   <div class="kpi">
+    <div class="name">MAPPED AREA</div>
+    <div class="value" id="kArea">0</div>
+    <div class="sub">km² approximate geometry area</div>
+   </div>
+   <div class="kpi">
+    <div class="name">ADMINISTRATIVE UNITS</div>
+    <div class="value" id="kAdmin">0</div>
+    <div class="sub">Unique regions / LGAs</div>
+   </div>
+   <div class="kpi">
+    <div class="name">MAP ZOOM</div>
+    <div class="value" id="kZoom">9</div>
+    <div class="sub">Current map scale level</div>
+   </div>
+   <div class="kpi">
+    <div class="name">GEOMETRY TYPES</div>
+    <div class="value" id="kGeometry">0</div>
+    <div class="sub">Distinct geometry categories</div>
+   </div>
+  </div>
+
+  <div class="chart-card">
+   <div class="chart-title">01. FEATURE DISTRIBUTION BY REGION / LGA</div>
+   <div class="chart-box large"><canvas id="regionChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+   <div class="chart-title">02. TOP 10 DISTRICTS BY FEATURE COUNT</div>
+   <div class="chart-box"><canvas id="districtChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+   <div class="chart-title">03. GEOMETRY TYPE DISTRIBUTION</div>
+   <div class="chart-box"><canvas id="geometryChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+   <div class="chart-title">04. AREA DISTRIBUTION BY REGION (km²)</div>
+   <div class="chart-box large"><canvas id="areaChart"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+   <div class="chart-title">05. TOP 15 WARDS BY FEATURE COUNT</div>
+   <div class="chart-box large"><canvas id="wardChart"></canvas></div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">Administrative summary</div>
+   <div class="table-wrap">
+    <table>
+     <thead>
+      <tr><th>Region / LGA</th><th>Features</th><th>Area km²</th></tr>
+     </thead>
+     <tbody id="summaryTable">
+      <tr><td colspan="3">No data loaded</td></tr>
+     </tbody>
+    </table>
+   </div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">Selected feature information</div>
+   <div id="featureDetails" class="note">Select a polygon on the map to inspect its properties.</div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">Imagery tile information</div>
+   <div id="tileDetails" class="note">Tile coordinates will appear when you click the map.</div>
+  </div>
+
+  <div class="section">
+   <div class="section-title">Methodology & data limitations</div>
+   <p class="note">
+    Imagery: Esri World Imagery tile service.
+    Geographic analysis: uploaded GeoJSON geometries.
+    Area: Turf.js geodesic area calculation.
+    Coordinate reference: WGS84.
+    Feature counts represent loaded records, not population.
+    Satellite tile pixels are not independently classified or measured.
+    Area summaries are based on the geometry records and may overlap.
+   </p>
+  </div>
+
+  <footer>
+   Produced by Ansu Singhateh<br>
+   GIS Analyst | GIS-Cartography Unit | Gambia Bureau of Statistics<br>
+   SILKYSINGZ GEOAI • Research and educational use
+  </footer>
+
+ </div>
+</section>
+
+</main>
+
+<script>
+/* =========================================================
+   SILKYSINGZ GEOAI | APPLICATION ENGINE
+========================================================= */
+
+const gambiaBounds = L.latLngBounds(
+ [13.0,-17.0],
+ [13.9,-13.7]
+);
+
+const map = L.map('map',{
+ center:[13.45,-16.58],
+ zoom:9,
+ zoomControl:true,
+ preferCanvas:true
+});
+
+const tileURLs = {
+ satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+ road:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+ topo:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+ osm:'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+};
+
+const imagery = L.tileLayer(tileURLs.satellite,{
+ maxZoom:19,
+ attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+}).addTo(map);
+
+const labels = L.tileLayer(
+ 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+ {maxZoom:19,opacity:.95,attribution:'Esri Reference'}
+);
+
+let currentBase='satellite';
+let geoData=null;
+let filteredFeatures=[];
+let geoLayer=null;
+let selectedLayer=null;
+let selectedFeature=null;
+let labelLayer=L.layerGroup().addTo(map);
+let charts={};
+let detected={region:null,district:null,ward:null};
+
+const $=id=>document.getElementById(id);
+const number=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
+
+function norm(v){
+ return String(v??'').trim().toLowerCase().replace(/[\s_-]+/g,'');
+}
+
+function findField(properties, candidates){
+ const keys=Object.keys(properties||{});
+ for(const candidate of candidates){
+  const match=keys.find(k=>norm(k)===norm(candidate));
+  if(match) return match;
+ }
+ for(const candidate of candidates){
+  const match=keys.find(k=>norm(k).includes(norm(candidate)));
+  if(match) return match;
+ }
+ return null;
+}
+
+function detectFields(features){
+ const p=features.find(f=>f.properties)?.properties||{};
+ detected.region=findField(p,[
+  'RCO','region','regionname','lganame','lga','localgovernmentarea'
+ ]);
+ detected.district=findField(p,[
+  'distname','district','districtname'
+ ]);
+ detected.ward=findField(p,[
+  'wardname','ward','ward_name'
+ ]);
+ $('fieldInfo').textContent=
+  `Detected fields: Region=${detected.region||'Not found'} | District=${detected.district||'Not found'} | Ward=${detected.ward||'Not found'}`;
+}
+
+function uniqueValues(features,field){
+ if(!field) return [];
+ return [...new Set(features.map(f=>f.properties?.[field])
+  .filter(v=>v!==null&&v!==undefined&&String(v).trim()!=='')
+  .map(v=>String(v)))].sort((a,b)=>a.localeCompare(b));
+}
+
+function populateSelect(id,values,defaultText){
+ const el=$(id);
+ el.innerHTML='';
+ const all=document.createElement('option');
+ all.value='ALL';all.textContent=defaultText;
+ el.appendChild(all);
+ values.forEach(v=>{
+  const o=document.createElement('option');
+  o.value=v;o.textContent=v;el.appendChild(o);
+ });
+}
+
+function updateSelectors(){
+ if(!geoData)return;
+ const all=geoData.features;
+ populateSelect('regionSelect',uniqueValues(all,detected.region),'All regions');
+ updateDistricts();
+ updateWards();
+}
+
+function updateDistricts(){
+ const r=$('regionSelect').value;
+ const subset=geoData.features.filter(f=>
+  r==='ALL'||String(f.properties?.[detected.region])===r
+ );
+ populateSelect('districtSelect',uniqueValues(subset,detected.district),'All districts');
+ updateWards();
+}
+
+function updateWards(){
+ const r=$('regionSelect').value;
+ const d=$('districtSelect').value;
+ const subset=geoData.features.filter(f=>
+  (r==='ALL'||String(f.properties?.[detected.region])===r)&&
+  (d==='ALL'||String(f.properties?.[detected.district])===d)
+ );
+ populateSelect('wardSelect',uniqueValues(subset,detected.ward),'All wards');
+}
+
+$('regionSelect').addEventListener('change',()=>{
+ updateDistricts();applyFilters();
+});
+$('districtSelect').addEventListener('change',()=>{
+ updateWards();applyFilters();
+});
+$('wardSelect').addEventListener('change',applyFilters);
+
+function validateGeoJSON(data){
+ if(data?.type==='FeatureCollection'&&Array.isArray(data.features))return data;
+ if(data?.type==='Feature')return {type:'FeatureCollection',features:[data]};
+ throw new Error('Invalid GeoJSON. Expected a FeatureCollection or Feature.');
+}
+
+function loadGeoJSON(data){
+ try{
+  geoData=validateGeoJSON(data);
+  geoData.features=geoData.features.filter(f=>f&&f.geometry);
+  detectFields(geoData.features);
+  updateSelectors();
+  applyFilters();
+  zoomToData();
+  $('mapInfo').innerHTML='<b>DATA LOADED</b><br>'+number(geoData.features.length)+' features available';
+ }catch(e){alert('Dataset error: '+e.message)}
+}
+
+$('geoFile').addEventListener('change',async e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  loadGeoJSON(data);
+ }catch(err){alert('Could not read GeoJSON: '+err.message)}
+});
+
+async function loadRemote(){
+ const url=$('geoUrl').value.trim();
+ if(!url){alert('Enter a GeoJSON URL first.');return}
+ try{
+  $('mapInfo').textContent='Loading geographic data...';
+  const response=await fetch(url);
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  loadGeoJSON(await response.json());
+ }catch(e){
+  $('mapInfo').textContent='Remote loading failed';
+  alert('Remote dataset could not load: '+e.message+
+  '. Check the URL and CORS permissions.');
+ }
+}
+
+function getStyle(feature){
+ const isSelected=selectedFeature===feature;
+ return {
+  color:isSelected?'#ffcc43':'#23c7ed',
+  weight:isSelected?3:1,
+  opacity:1,
+  fillColor:isSelected?'#f6b844':'#159cc6',
+  fillOpacity:isSelected?.28:.035
+ };
+}
+
+function popupHTML(feature){
+ const p=feature.properties||{};
+ const entries=Object.entries(p).slice(0,18);
+ return '<b>Feature attributes</b><hr>'+
+ entries.map(([k,v])=>
+  `<b>${escapeHTML(k)}:</b> ${escapeHTML(v)}`
+ ).join('<br>')+
+ '<hr><span style="color:#70c9e8">GBoS GEOAI</span>';
+}
+
+function escapeHTML(v){
+ return String(v??'').replace(/[&<>"']/g,c=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ })[c]);
+}
+
+function applyFilters(){
+ if(!geoData)return;
+ const r=$('regionSelect').value;
+ const d=$('districtSelect').value;
+ const w=$('wardSelect').value;
+
+ filteredFeatures=geoData.features.filter(f=>{
+  const p=f.properties||{};
+  return (r==='ALL'||String(p[detected.region])===r)&&
+         (d==='ALL'||String(p[detected.district])===d)&&
+         (w==='ALL'||String(p[detected.ward])===w);
+ });
+
+ renderGeoLayer();
+ updateAnalytics();
+ $('mapInfo').innerHTML='<b>ACTIVE SPATIAL VIEW</b><br>'+
+ number(filteredFeatures.length)+' selected features';
+}
+
+function renderGeoLayer(){
+ if(geoLayer)map.removeLayer(geoLayer);
+ if(selectedLayer)map.removeLayer(selectedLayer);
+ labelLayer.clearLayers();
+
+ const features=filteredFeatures;
+ if(!features.length){
+  updateAnalytics();
+  return;
+ }
+
+ geoLayer=L.geoJSON({
+  type:'FeatureCollection',features
+ },{
+  style:getStyle,
+  onEachFeature:(feature,layer)=>{
+   layer.bindPopup(popupHTML(feature));
+   layer.on('click',()=>{
+    if($('selectionMode').value==='click'){
+     selectedFeature=feature;
+     selectedLayer=L.geoJSON(feature,{
+      style:{color:'#ffcf43',weight:4,fillColor:'#ffcf43',fillOpacity:.25}
+     }).addTo(map);
+    }
+    showFeature(feature);
+    updateAnalytics();
+   });
+   if($('labelToggle').checked){
+    const p=feature.properties||{};
+    const name=p[detected.ward]||p[detected.district]||p[detected.region];
+    if(name){
+     const center=layer.getBounds?.().getCenter?.();
+     if(center){
+      L.marker(center,{
+       interactive:false,
+       icon:L.divIcon({
+        className:'',
+        html:`<div style="color:white;text-shadow:1px 1px 3px black;font-size:9px;font-weight:bold">${escapeHTML(name)}</div>`
+       })
+      }).addTo(labelLayer);
+     }
+    }
+   }
+  }
+ }).addTo(map);
+
+ updateLayerVisibility();
+}
+
+function updateLayerVisibility(){
+ if(geoLayer){
+  const enabled=$('boundaryToggle').checked&&$('eaToggle').checked;
+  if(enabled&&!map.hasLayer(geoLayer))geoLayer.addTo(map);
+  if(!enabled&&map.hasLayer(geoLayer))map.removeLayer(geoLayer);
+ }
+ if(selectedLayer){
+  if($('highlightToggle').checked&&!map.hasLayer(selectedLayer))selectedLayer.addTo(map);
+  if(!$('highlightToggle').checked&&map.hasLayer(selectedLayer))map.removeLayer(selectedLayer);
+ }
+ if($('labelToggle').checked){
+  if(!map.hasLayer(labelLayer))labelLayer.addTo(map);
+ }else if(map.hasLayer(labelLayer))map.removeLayer(labelLayer);
+
+ if($('imageryToggle').checked){
+  if(!map.hasLayer(imagery))imagery.addTo(map);
+ }else if(map.hasLayer(imagery))map.removeLayer(imagery);
+}
+
+[
+ 'boundaryToggle','eaToggle','labelToggle',
+ 'highlightToggle','imageryToggle'
+].forEach(id=>$(id).addEventListener('change',updateLayerVisibility));
+
+function showFeature(feature){
+ selectedFeature=feature;
+ const p=feature.properties||{};
+ $('featureDetails').innerHTML=Object.entries(p).slice(0,20)
+ .map(([k,v])=>`<b>${escapeHTML(k)}:</b> ${escapeHTML(v)}`)
+ .join('<br>')||'No properties available';
+ if(geoLayer)geoLayer.setStyle(getStyle);
+}
+
+function clearSelection(){
+ selectedFeature=null;
+ if(selectedLayer){map.removeLayer(selectedLayer);selectedLayer=null}
+ if(geoLayer)geoLayer.setStyle(getStyle);
+ $('featureDetails').textContent='No feature selected.';
+ updateAnalytics();
+}
+
+function clearData(){
+ geoData=null;filteredFeatures=[];
+ if(geoLayer)map.removeLayer(geoLayer);
+ if(selectedLayer)map.removeLayer(selectedLayer);
+ geoLayer=null;selectedLayer=null;selectedFeature=null;
+ labelLayer.clearLayers();
+ detected={region:null,district:null,ward:null};
+ ['regionSelect','districtSelect','wardSelect'].forEach(id=>
+  populateSelect(id,[],id==='regionSelect'?'All regions':id==='districtSelect'?'All districts':'All wards')
+ );
+ $('fieldInfo').textContent='No geographic data loaded.';
+ $('featureDetails').textContent='No feature selected.';
+ updateAnalytics();
+ $('mapInfo').textContent='Awaiting spatial dataset...';
+}
+
+function zoomToData(){
+ if(geoLayer&&geoLayer.getBounds().isValid()){
+  map.fitBounds(geoLayer.getBounds(),{padding:[20,20],maxZoom:15});
+ }else{
+  map.fitBounds(gambiaBounds);
+ }
+}
+
+function setZoom(){
+ map.setZoom(Number($('zoomSelect').value));
+}
+
+function changeBasemap(){
+ const base=$('baseSelect').value;
+ if(map.hasLayer(imagery))map.removeLayer(imagery);
+ if(map.hasLayer(labels))map.removeLayer(labels);
+ if(map.hasLayer(otherBase))map.removeLayer(otherBase);
+
+ currentBase=base;
+ if(base==='satellite'){
+  imagery.setUrl(tileURLs.satellite);
+  if($('imageryToggle').checked)imagery.addTo(map);
+ }else if(base==='hybrid'){
+  imagery.setUrl(tileURLs.satellite);
+  if($('imageryToggle').checked)imagery.addTo(map);
+  labels.addTo(map);
+ }else{
+  const url=base==='road'?tileURLs.road:
+            base==='topo'?tileURLs.topo:tileURLs.osm;
+  otherBase=L.tileLayer(url,{
+   maxZoom:19,
+   attribution:base==='osm'?'© OpenStreetMap contributors':'Esri'
+  }).addTo(map);
+ }
+}
+let otherBase=L.tileLayer(tileURLs.road);
+$('baseSelect').addEventListener('change',changeBasemap);
+
+$('opacity').addEventListener('input',()=>{
+ const v=Number($('opacity').value);
+ $('opacityValue').textContent=v+'%';
+ imagery.setOpacity(v/100);
+});
+
+function areaKm2(f){
+ try{
+  if(!['Polygon','MultiPolygon'].includes(f.geometry.type))return 0;
+  return turf.area(f)/1000000;
+ }catch(e){return 0}
+}
+
+function groupCounts(features,field){
+ const counts={};
+ features.forEach(f=>{
+  const v=field?(f.properties?.[field]??'Unspecified'):'Unspecified';
+  counts[String(v)]=(counts[String(v)]||0)+1;
+ });
+ return counts;
+}
+
+function groupAreas(features,field){
+ const areas={};
+ features.forEach(f=>{
+  const v=field?(f.properties?.[field]??'Unspecified'):'Unspecified';
+  areas[String(v)]=(areas[String(v)]||0)+areaKm2(f);
+ });
+ return areas;
+}
+
+function geometryCounts(features){
+ const out={};
+ features.forEach(f=>{
+  const t=f.geometry?.type||'Unknown';
+  out[t]=(out[t]||0)+1;
+ });
+ return out;
+}
+
+function destroyChart(id){
+ if(charts[id]){charts[id].destroy();delete charts[id]}
+}
+
+function createChart(id,type,labels,data,options={}){
+ destroyChart(id);
+ const ctx=$(id).getContext('2d');
+ charts[id]=new Chart(ctx,{
+  type,
+  data:{
+   labels,
+   datasets:[{
+    label:options.label||'Features',
+    data,
+    backgroundColor:[
+     '#20b9df','#4388ef','#29c58a','#f0a64b',
+     '#a98af7','#ef6672','#55c7a2','#e5c957',
+     '#5580b8','#c77ce3','#4ca5a5','#e58a55'
+    ],
+    borderColor:'#15263b',
+    borderWidth:1,
+    borderRadius:type==='bar'?3:0
+   }]
+  },
+  options:{
+   responsive:true,maintainAspectRatio:false,
+   indexAxis:options.horizontal?'y':'x',
+   plugins:{
+    legend:{display:type==='doughnut'||type==='pie',
+     labels:{color:'#c7d5e2',font:{size:9},boxWidth:10}},
+    tooltip:{enabled:true}
+   },
+   scales:type==='doughnut'||type==='pie'?{}:{
+    x:{ticks:{color:'#a9bfd3',font:{size:9}},
+       grid:{color:'#293c50'}},
+    y:{beginAtZero:true,ticks:{color:'#a9bfd3',font:{size:9}},
+       grid:{color:'#293c50'}}
+   }
+  }
+ });
+}
+
+function updateAnalytics(){
+ const features=filteredFeatures;
+ const total=geoData?.features.length||0;
+ const area=features.reduce((s,f)=>s+areaKm2(f),0);
+ const regions=groupCounts(features,detected.region);
+ const districts=groupCounts(features,detected.district);
+ const wards=groupCounts(features,detected.ward);
+ const geometries=geometryCounts(features);
+ const areaGroups=groupAreas(features,detected.region);
+
+ $('kFeatures').textContent=number(total);
+ $('kVisible').textContent=number(features.length);
+ $('kArea').textContent=number(area);
+ $('kAdmin').textContent=number(Object.keys(regions).length);
+ $('kZoom').textContent=map.getZoom();
+ $('kGeometry').textContent=number(Object.keys(geometries).length);
+
+ const regionEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]);
+ const districtEntries=Object.entries(districts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+ const wardEntries=Object.entries(wards).sort((a,b)=>b[1]-a[1]).slice(0,15);
+ const areaEntries=Object.entries(areaGroups).sort((a,b)=>b[1]-a[1]);
+
+ createChart('regionChart','bar',
+  regionEntries.map(x=>x[0]),regionEntries.map(x=>x[1]),
+  {label:'Features'}
+ );
+ createChart('districtChart','bar',
+  districtEntries.map(x=>x[0]),districtEntries.map(x=>x[1]),
+  {horizontal:true,label:'Features'}
+ );
+ createChart('geometryChart','doughnut',
+  Object.keys(geometries),Object.values(geometries)
+ );
+ createChart('areaChart','bar',
+  areaEntries.map(x=>x[0]),areaEntries.map(x=>Number(x[1].toFixed(2))),
+  {label:'Area km²'}
+ );
+ createChart('wardChart','bar',
+  wardEntries.map(x=>x[0]),wardEntries.map(x=>x[1]),
+  {horizontal:true,label:'Features'}
+ );
+
+ $('summaryTable').innerHTML=areaEntries.map(([name,a])=>
+  `<tr><td>${escapeHTML(name)}</td>
+  <td>${number(regions[name]||0)}</td>
+  <td>${number(a)}</td></tr>`
+ ).join('')||'<tr><td colspan="3">No data available</td></tr>';
+}
+
+function download(content,name,type){
+ const blob=new Blob([content],{type});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=name;a.click();
+ URL.revokeObjectURL(url);
+}
+
+function exportGeoJSON(){
+ if(!filteredFeatures.length){alert('No features to export.');return}
+ download(JSON.stringify({
+  type:'FeatureCollection',features:filteredFeatures
+ },null,2),'GBoS_Selected_Geographic_Data.geojson','application/geo+json');
+}
+
+function exportCSV(){
+ if(!filteredFeatures.length){alert('No features to export.');return}
+ const keys=[...new Set(filteredFeatures.flatMap(f=>Object.keys(f.properties||{})))];
+ const rows=[keys,...filteredFeatures.map(f=>keys.map(k=>f.properties?.[k]??''))];
+ const csv=rows.map(row=>row.map(v=>
+  '"'+String(v).replace(/"/g,'""')+'"'
+ ).join(',')).join('\n');
+ download(csv,'GBoS_Spatial_Attributes.csv','text/csv');
+}
+
+/* Tile coordinate calculations: XYZ Web Mercator */
+function tileXY(lat,lon,z){
+ const n=Math.pow(2,z);
+ const x=Math.floor((lon+180)/360*n);
+ const latRad=lat*Math.PI/180;
+ const y=Math.floor((1-Math.asinh(Math.tan(latRad))/Math.PI)/2*n);
+ return {x,y,z};
+}
+
+function updateTileInfo(lat,lon){
+ const z=map.getZoom();
+ const t=tileXY(lat,lon,z);
+ const url=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${t.y}/${t.x}`;
+ $('coordinateInfo').innerHTML=
+  `<b>Latitude:</b> ${lat.toFixed(6)}<br>
+   <b>Longitude:</b> ${lon.toFixed(6)}<br>
+   <b>Zoom:</b> ${z}<br>
+   <b>Tile X:</b> ${t.x}<br>
+   <b>Tile Y:</b> ${t.y}<br>
+   <b>Tile URL:</b><br>${url}`;
+ $('tileDetails').innerHTML=
+  `<b>Esri XYZ tile</b><br>
+   Zoom: ${z}<br>Column X: ${t.x}<br>Row Y: ${t.y}<br>
+   <a href="${url}" target="_blank" style="color:#20b9df">Open exact imagery tile</a>`;
+ $('mapCoords').textContent=`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+ $('tileCoords').textContent=`Tile: ${z}/${t.y}/${t.x}`;
+}
+
+map.on('click',e=>{
+ updateTileInfo(e.latlng.lat,e.latlng.lng);
+});
+
+map.on('zoomend',()=>{
+ $('mapZoom').textContent='Zoom: '+map.getZoom();
+ $('kZoom').textContent=map.getZoom();
+ const c=map.getCenter();
+ updateTileInfo(c.lat,c.lng);
+});
+
+map.on('moveend',()=>{
+ const c=map.getCenter();
+ $('mapCoords').textContent=`${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`;
+});
+
+function resetDashboard(){
+ $('regionSelect').value='ALL';
+ $('districtSelect').value='ALL';
+ $('wardSelect').value='ALL';
+ $('baseSelect').value='satellite';
+ $('zoomSelect').value='10';
+ $('opacity').value='100';
+ $('opacityValue').textContent='100%';
+ imagery.setOpacity(1);
+ clearSelection();
+ changeBasemap();
+ if(geoData)applyFilters();
+ map.setView([13.45,-16.58],9);
+}
+
+function initialize(){
+ updateAnalytics();
+ map.fitBounds(gambiaBounds);
+ const c=map.getCenter();
+ updateTileInfo(c.lat,c.lng);
+}
+
+initialize();
+
+</script>
+</body>
+</html>
